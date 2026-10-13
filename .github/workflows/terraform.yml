@@ -71,8 +71,8 @@ jobs:
           AWS_SESSION_TOKEN: ${{ secrets.STATE_SESSION_TOKEN }}
         run: |
           set +e
-          terraform plan -input=false -no-color -detailed-exitcode -out=terraform.tfplan 2>&1 | tee plan.txt
-          plan_exit=${PIPESTATUS[0]}
+          terraform plan -input=false -no-color -detailed-exitcode -out=terraform.tfplan > plan.txt 2>&1
+          plan_exit=$?
           set -e
           plan_text="$(cat plan.txt)"
           for secret in "$GITHUB_TOKEN" "$AWS_ACCESS_KEY_ID" "$AWS_SECRET_ACCESS_KEY" "$AWS_SESSION_TOKEN"; do

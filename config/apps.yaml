@@ -8,7 +8,6 @@ apps:
     review_due: "2026-11-13"
     repositories:
       - demo-service-a
-      - demo-service-b
 
   demo-b:
     installation_id: "170966234"

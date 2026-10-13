@@ -1,0 +1,16 @@
+# Terraform working files and local inputs; keep the provider lock file tracked.
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+*.tfplan
+crash.log
+crash.*.log
+
+# Credentials must stay outside the repository.
+.env
+.env.*
+*.pem
+*.key
+*.dpapi

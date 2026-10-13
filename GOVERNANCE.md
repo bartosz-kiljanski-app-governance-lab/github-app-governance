@@ -1,29 +1,22 @@
 # App governance
 
-Each installation has an accountable owner, purpose, review deadline, and allowed repository list in `config/apps.yaml`. App registration and installation are bootstrap steps; this repository governs access to existing installations.
+Owners review purpose and repository access quarterly and when App permissions change, renewing `review_due` through a PR. Expiry flags a review; it does not revoke access.
 
-Owners review access at least quarterly and whenever an App's purpose or requested permissions change. They confirm the repository list and renew `review_due` through a PR. That date expires the recorded approval, not the live installation. Due reviews need an owner decision; automatic deletion could break builds or deployments.
+The daily/manual audit reports unmanaged or missing installations, all-repository access, missing ownership metadata, and due reviews. Findings and failures update the pinned issue and fail the workflow. No access is removed automatically. Organization owners adopt or remove unknown Apps; at scale, teams triage their Apps using the paginated inventory.
 
-## Detection and changes
+Access changes go through catalog PRs. Terraform owns each installation's complete repository list, including removing access added manually.
 
-The audit compares the organization's live installation IDs with the catalog daily and on manual runs. It reports unmanaged Apps, missing installations, all-repository access, incomplete ownership metadata, and due reviews. Findings fail the audit and appear in its logs, summary, and configured status issue; failures replace any old clean status. It never modifies App access. The workflow's built-in token updates the issue with `issues: write`.
+## Removal
 
-For an unmanaged App, an organization owner identifies its installer and consumers, then adopts it with an owner and matching access or schedules removal. For hundreds of Apps, assign owners to teams and have them triage their findings; the audit paginates the inventory. This demo does not build a separate ticketing integration.
+1. Confirm consumers and a removal window.
+2. Narrow access through a PR; check dependent workloads.
+3. Uninstall in GitHub settings and revoke credentials you control.
+4. Stop applies, back up state, forget that installation's binding, and remove its catalog entry. Review the next plan before resuming.
 
-Normal changes edit the catalog, review the PR plan, and merge for apply. Terraform owns each managed installation's complete repository list. Check unexpected removals carefully: access added outside the catalog is not an approved exception.
+Deleting a catalog entry alone [leaves one repository accessible](https://github.com/integrations/terraform-provider-github/blob/v6.13.0/github/resource_github_app_installation_repositories.go); it does not uninstall the App.
 
-## Decommissioning
+## Limits
 
-1. Confirm consumers and a removal window with the App and repository owners.
-2. Narrow access through a PR and check dependent builds and webhooks.
-3. An organization owner uninstalls the App in GitHub settings; revoke any associated credentials you control.
-4. With applies stopped, back up state, forget only that installation's Terraform binding, and remove its catalog entry. Resume applies after a reviewed plan confirms no unrelated changes.
-
-Deleting a catalog entry alone is unsafe: the pinned provider's [delete implementation](https://github.com/integrations/terraform-provider-github/blob/v6.13.0/github/resource_github_app_installation_repositories.go) leaves one repository accessible. It does not uninstall the App.
-
-## Security limits
-
-- The tested fine-grained PAT could read repository metadata but received HTTP 403 from the provider's installation-repository read endpoint. A classic PAT with `repo` and `read:org` worked for reads and access changes. It is broader than ideal; restrict its owner, lifetime, and storage. `workflow` is needed only to publish workflow files.
-- Credentialed PR jobs trust collaborators who can push branches in this repository. Fork jobs are skipped. Review Terraform, scripts, workflows, and provider updates as code that can use those credentials.
-- B2 stores encrypted state in a private bucket using a bucket-scoped key. Locking is disabled; the Actions queue serializes CI jobs, but does not coordinate local applies or other repositories. Stop CI writes before local maintenance.
-- Scheduled audit runs can be delayed. App permission changes and workload health need owner review; repository access alone does not prove an App is safe.
+- The tested fine-grained PAT received HTTP 403 on provider installation reads. Classic `repo` + `read:org` worked; protect this broader credential. `workflow` is only needed for publishing workflows. Credentialed plans trust repository collaborators.
+- B2 state is encrypted in a private bucket with a bucket-scoped key. Locking is disabled. CI queues do not coordinate local applies; stop CI writes before maintenance.
+- Scheduled audits can run late. Owners must also review App permissions and workload health.

@@ -10,11 +10,11 @@ Use Terraform 1.16.x and the pinned GitHub provider 6.13.0. Repositories and sel
 
 1. Clone this repository into a new directory to start with empty state. Do not reuse another organization's state.
 2. Replace the organization, App details, installation IDs, and repository names in `config/apps.yaml`. For initial adoption, match the live repository lists.
-3. Copy the appropriate backend example to `config/backend.tfbackend`: `backend.tfbackend.example` for AWS S3, or `backend.b2.tfbackend.example` for B2. Set your bucket, region, and a state key dedicated to your organization.
+3. Configure tracked `config/backend.hcl` with your bucket, region, and a state key dedicated to your organization. Use `backend.tfbackend.example` for AWS S3 or `backend.b2.tfbackend.example` for B2 as a starting point.
 4. Set `GITHUB_TOKEN` securely using a classic PAT with `repo` and `read:org`, belonging to an organization owner with repository administration access. Supply storage credentials through `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` (B2 key ID/application key for B2, AWS credentials for S3).
 
 ```powershell
-terraform init -input=false -lockfile=readonly '-backend-config=config/backend.tfbackend'
+terraform init -input=false -lockfile=readonly '-backend-config=config/backend.hcl'
 terraform fmt -check
 terraform validate
 terraform plan -input=false -detailed-exitcode '-out=adoption.tfplan'
@@ -33,10 +33,10 @@ After adoption, imports are skipped for resources already in state. Further acce
 
 ## GitHub Actions
 
-Set repository variable `TERRAFORM_BACKEND_CONFIG` to your backend file's contents. Add secrets `GOVERNANCE_GITHUB_TOKEN`, `STATE_ACCESS_KEY_ID`, and `STATE_SECRET_ACCESS_KEY` (optionally `STATE_SESSION_TOKEN` for temporary AWS credentials).
+Add secrets `GOVERNANCE_GITHUB_TOKEN`, `STATE_ACCESS_KEY_ID`, and `STATE_SECRET_ACCESS_KEY` (optionally `STATE_SESSION_TOKEN` for temporary AWS credentials). CI reads backend settings from `config/backend.hcl`.
 
-Pull requests from branches in this repository run formatting, validation, and plan. Read the plan in the Actions job summary before merging; a push to `main` plans again and applies. Manual runs only plan. Fork PRs cannot run the credentialed job. Terraform jobs are serialized; avoid concurrent local applies.
+Pull requests from branches in this repository run formatting, validation, and plan. Read the updated plan comment before merging; the full output is also in the Actions summary. A push to `main` plans again and applies. Manual runs only plan. Fork PRs cannot run the credentialed job. Terraform jobs are serialized; avoid concurrent local applies.
 
-This deployment uses B2; reviewers can configure AWS S3 or another S3-compatible backend. B2 state locking is disabled; run only one apply at a time. Never commit credentials, state, saved plans, or your configured backend file.
+This deployment uses B2; reviewers can configure AWS S3 or another S3-compatible backend. B2 state locking is disabled; run only one apply at a time. Never commit credentials, state, or saved plans.
 
 Removing an App entry does not uninstall it; provider deletion leaves one repository accessible.

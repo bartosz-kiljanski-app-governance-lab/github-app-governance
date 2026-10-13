@@ -1,0 +1,49 @@
+name: Audit GitHub Apps
+
+on:
+  schedule:
+    - cron: "23 7 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    concurrency:
+      group: audit-status
+      queue: max
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Install YAML parser
+        run: python -m pip install -r requirements.txt
+
+      - name: Audit
+        env:
+          GITHUB_TOKEN: ${{ secrets.GOVERNANCE_GITHUB_TOKEN }}
+        run: python scripts/audit_apps.py --report-file "$RUNNER_TEMP/audit-report.md"
+
+      - name: Update audit status issue
+        if: always() && vars.AUDIT_STATUS_ISSUE_NUMBER != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AUDIT_STATUS_ISSUE_NUMBER: ${{ vars.AUDIT_STATUS_ISSUE_NUMBER }}
+        run: |
+          report="$RUNNER_TEMP/audit-report.md"
+          if [ ! -f "$report" ]; then
+            printf '## Audit failed to complete\n\nChecked: %s\n' "$(date -u +'%Y-%m-%d %H:%M:%S UTC')" > "$report"
+          fi
+          printf '\n[Workflow run](%s/%s/actions/runs/%s)\n' "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" >> "$report"
+          gh issue edit "$AUDIT_STATUS_ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file "$report"

@@ -1,5 +1,7 @@
 # GitHub App governance
 
+![GitOps workflow for GitHub App access](diagram.png)
+
 `config/apps.yaml` records ownership, purpose, review dates, installation IDs, and allowed repositories. Terraform owns each installation's complete repository list. PRs show the plan; merging to main applies it.
 
 Terraform protects main with required PRs, its Actions check, and resolved conversations, including for admins. Required approvals are zero for this single-owner demo.

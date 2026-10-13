@@ -5,7 +5,7 @@ apps:
     installation_id: "170964049"
     owner: bartoszkiljanski
     purpose: "Demonstrate repository-access governance for service A."
-    review_due: "2026-11-13"
+    review_due: "2026-10-12"
     repositories:
       - demo-service-a
 

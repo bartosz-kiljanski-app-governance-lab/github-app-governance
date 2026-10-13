@@ -31,6 +31,12 @@ Plan exit codes: `0` no changes, `2` proposed changes, `1` error.
 
 After adoption, imports are skipped for resources already in state. Further access changes come from editing the catalog.
 
+## GitHub Actions
+
+Set repository variable `TERRAFORM_BACKEND_CONFIG` to your backend file's contents. Add secrets `GOVERNANCE_GITHUB_TOKEN`, `STATE_ACCESS_KEY_ID`, and `STATE_SECRET_ACCESS_KEY` (optionally `STATE_SESSION_TOKEN` for temporary AWS credentials).
+
+Pull requests from branches in this repository run formatting, validation, and plan. Read the plan in the Actions job summary before merging; a push to `main` plans again and applies. Manual runs only plan. Fork PRs cannot run the credentialed job. Terraform jobs are serialized; avoid concurrent local applies.
+
 This deployment uses B2; reviewers can configure AWS S3 or another S3-compatible backend. B2 state locking is disabled; run only one apply at a time. Never commit credentials, state, saved plans, or your configured backend file.
 
 Removing an App entry does not uninstall it; provider deletion leaves one repository accessible.

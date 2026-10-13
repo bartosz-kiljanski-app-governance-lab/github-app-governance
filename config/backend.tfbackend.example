@@ -1,0 +1,7 @@
+bucket               = "replace-with-private-s3-bucket-name"
+region               = "replace-with-region"
+key                  = "github-app-governance/replace-with-your-organization/terraform.tfstate"
+workspace_key_prefix = "github-app-governance/replace-with-your-organization/workspaces"
+
+encrypt      = true
+use_lockfile = true

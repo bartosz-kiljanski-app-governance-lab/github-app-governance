@@ -41,4 +41,10 @@ Pull requests from branches in this repository run formatting, validation, and p
 
 This deployment uses B2; reviewers can configure AWS S3 or another S3-compatible backend. B2 state locking is disabled; run only one apply at a time. Never commit credentials, state, or saved plans.
 
-Removing an App entry does not uninstall it; provider deletion leaves one repository accessible.
+## Audit and ownership
+
+The audit reports unmanaged installations and due reviews without changing access. Run it from Actions, or locally with `python -m pip install -r requirements.txt` then `python scripts/audit_apps.py`. Exit codes: `0` clean, `1` findings, `2` audit failed.
+
+For a persistent status page, create and pin an issue titled **GitHub App Governance — Audit Status**. Set Actions variable `AUDIT_STATUS_ISSUE_NUMBER` to its number; each audit replaces its body with the latest report and run link.
+
+See [GOVERNANCE.md](GOVERNANCE.md) for ownership, review, safe removal, and security limits.

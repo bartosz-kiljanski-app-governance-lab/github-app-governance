@@ -6,6 +6,7 @@
 *.tfvars.json
 *.tfplan
 *.tfbackend
+__pycache__/
 crash.log
 crash.*.log
 

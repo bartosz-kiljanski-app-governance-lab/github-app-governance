@@ -12,8 +12,3 @@ variable "app_a_repository" {
   description = "Short name of the existing repository App A can access."
   type        = string
 }
-
-variable "app_a_temporary_repository" {
-  description = "Short name of the existing repository temporarily granted to App A for Phase 1."
-  type        = string
-}

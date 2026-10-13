@@ -1,14 +1,5 @@
-variable "github_owner" {
-  description = "GitHub organization containing the existing App installation and repository."
+variable "apps_catalog_path" {
+  description = "Path to the GitHub App access catalog, relative to the Terraform root or absolute."
   type        = string
-}
-
-variable "app_a_installation_id" {
-  description = "App A's organization installation ID, not its App registration ID."
-  type        = string
-}
-
-variable "app_a_repository" {
-  description = "Short name of the existing repository App A can access."
-  type        = string
+  default     = "config/apps.yaml"
 }

@@ -1,0 +1,18 @@
+organization: bartosz-kiljanski-app-governance-lab
+
+apps:
+  demo-a:
+    installation_id: "170964049"
+    owner: bartoszkiljanski
+    purpose: "Demonstrate repository-access governance for service A."
+    review_due: "2026-11-13"
+    repositories:
+      - demo-service-a
+
+  demo-b:
+    installation_id: "170966234"
+    owner: bartoszkiljanski
+    purpose: "Demonstrate repository-access governance for service B."
+    review_due: "2026-11-13"
+    repositories:
+      - demo-service-b

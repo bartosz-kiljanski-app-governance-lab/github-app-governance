@@ -5,6 +5,7 @@
 *.tfvars
 *.tfvars.json
 *.tfplan
+*.tfbackend
 crash.log
 crash.*.log
 

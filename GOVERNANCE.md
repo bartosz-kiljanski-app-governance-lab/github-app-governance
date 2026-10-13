@@ -2,7 +2,9 @@
 
 Owners review purpose and access quarterly and when App permissions change, renewing `review_due` by PR. Expiry flags review; it does not revoke access.
 
-Daily/manual audits report unmanaged or missing installations, all-repository access, missing metadata, and due reviews. Findings or errors fail the workflow and update the status issue. Owners investigate unknown Apps before adoption or removal. At scale, teams triage their Apps; inventory reads paginate.
+Daily/manual audits report unmanaged or missing installations, all-repository access, missing metadata, and due reviews. Findings or errors fail the workflow and update the status issue. Inventory reads paginate.
+
+For hundreds of Apps, use team ownership and require CODEOWNERS review of catalog changes (not enabled in this demo). The platform team investigates unknown Apps before adoption or removal and escalates overdue reviews to owners.
 
 Terraform owns complete repository lists, including access added manually.
 
@@ -18,6 +20,6 @@ Deleting an entry alone [leaves one repository accessible](https://github.com/in
 
 ## Limits
 
-- The tested fine-grained PAT received HTTP 403 on installation reads. Classic `repo` + `read:org` worked. Protect this broader credential; plans trust repository collaborators. `workflow` is only needed for publishing workflows.
+- The tested fine-grained PAT received HTTP 403 on installation reads. Classic `repo` + `read:org` worked. Fine-grained support is [documented](https://docs.github.com/en/rest/apps/installations#add-a-repository-to-an-app-installation); verify provider operations before switching. Protect this broader credential; plans trust repository collaborators. `workflow` is only needed for publishing workflows.
 - B2 state is encrypted and private with a bucket-scoped key. CI queues do not coordinate local applies.
 - Schedules can run late. Owners must also review App permissions and workload health.

@@ -1,50 +1,48 @@
-# github-app-governance
+# GitHub App governance
 
-Terraform manages repository access for existing GitHub App installations.
+`config/apps.yaml` records ownership, purpose, review dates, installation IDs, and allowed repositories. Terraform owns each installation's complete repository list. PRs show the plan; merging to main applies it.
 
-Terraform also protects this repository's `main` branch: pull requests, a passing Terraform check, and resolved conversations are required, including for administrators. Required approvals are zero for this single-owner demo; use an independent reviewer in a team.
+Terraform protects main with required PRs, its Actions check, and resolved conversations, including for admins. Required approvals are zero for this single-owner demo.
 
-`config/apps.yaml` records each App's owner, purpose, review date, installation ID, and allowed repositories. Terraform manages the complete repository list for each installation. Access changes start with a catalog edit and a reviewed plan. Review dates do not automatically revoke access.
+## Reviewer setup
 
-## Run in your organization
+Use Terraform 1.16.x and existing selected-access App installations.
 
-Use Terraform 1.16.x and the pinned GitHub provider 6.13.0. Repositories and selected-access App installations must already exist.
-
-1. Clone this repository into a new directory to start with empty state. Do not reuse another organization's state.
-2. Replace the organization, App details, installation IDs, and repository names in `config/apps.yaml`. For initial adoption, match the live repository lists. If your governance repository has a different name, set `TF_VAR_governance_repository` locally; Actions uses its own repository name.
-3. Configure tracked `config/backend.hcl` with your bucket, region, and a state key dedicated to your organization. Use `backend.tfbackend.example` for AWS S3 or `backend.b2.tfbackend.example` for B2 as a starting point.
-4. Set `GITHUB_TOKEN` securely using a classic PAT with `repo` and `read:org`, belonging to an organization owner with repository administration access. Supply storage credentials through `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` (B2 key ID/application key for B2, AWS credentials for S3).
+1. Clone into a fresh directory. Edit `config/apps.yaml` to match your organization, installations, and current repository access.
+2. Edit `config/backend.hcl` for your bucket and a dedicated state key. B2 and AWS S3 examples are in `config/`.
+3. Set credentials outside Git: `GITHUB_TOKEN` (organization-owner classic PAT: `repo`, `read:org`), `AWS_ACCESS_KEY_ID`, and `AWS_SECRET_ACCESS_KEY`. For B2, use its application key ID and key.
+4. For a different governance repository name, set `TF_VAR_governance_repository`.
 
 ```powershell
-terraform init -input=false -lockfile=readonly '-backend-config=config/backend.hcl'
-terraform fmt -check
-terraform validate
-terraform plan -input=false -detailed-exitcode '-out=adoption.tfplan'
+cd terraform
+terraform init -lockfile=readonly '-backend-config=../config/backend.hcl'
 ```
 
-The import block adopts the catalog's installations into your new state. With matching repository lists, the first plan proposes imports without App access changes, plus main-branch protection. Review it before applying. If main is already protected, first import its rule with `terraform import github_branch_protection_v3.main 'YOUR-REPOSITORY:main'` and review any proposed changes.
+If main already has protection, adopt it first:
 
 ```powershell
-terraform apply -input=false 'adoption.tfplan'
-terraform plan -input=false -detailed-exitcode
+terraform import github_branch_protection_v3.main 'YOUR-REPOSITORY:main'
 ```
 
-Plan exit codes: `0` no changes, `2` proposed changes, `1` error.
+```powershell
+terraform plan '-out=adoption.tfplan'
+```
 
-After adoption, imports are skipped for resources already in state. Further access changes come from editing the catalog.
+Review before applying. Matching App access produces imports without access changes; main protection is created if needed.
 
-## GitHub Actions
+```powershell
+terraform apply 'adoption.tfplan'
+terraform plan -detailed-exitcode
+```
 
-Add secrets `GOVERNANCE_GITHUB_TOKEN`, `STATE_ACCESS_KEY_ID`, and `STATE_SECRET_ACCESS_KEY` (optionally `STATE_SESSION_TOKEN` for temporary AWS credentials). CI reads backend settings from `config/backend.hcl`.
+Imports are skipped afterward. Plan exits: `0` unchanged, `2` changes, `1` error.
 
-Pull requests from branches in this repository run formatting, validation, and plan. Read the updated plan comment before merging; the full output is also in the Actions summary. A push to `main` plans again and applies. Manual runs only plan. Fork PRs fail the Terraform check before checkout or credentialed steps. Terraform jobs are serialized; avoid concurrent local applies.
+## Actions and audit
 
-This deployment uses B2; reviewers can configure AWS S3 or another S3-compatible backend. B2 state locking is disabled; run only one apply at a time. Never commit credentials, state, or saved plans.
+Set secrets `GOVERNANCE_GITHUB_TOKEN`, `STATE_ACCESS_KEY_ID`, `STATE_SECRET_ACCESS_KEY` (optionally `STATE_SESSION_TOKEN`). Actions uses its own repository name. Fork PRs fail before checkout; manual Terraform runs only plan.
 
-## Audit and ownership
+**Audit GitHub Apps** runs daily or manually without changing access. Pin an issue and set `AUDIT_STATUS_ISSUE_NUMBER` to receive its latest report.
 
-The audit reports unmanaged installations and due reviews without changing access. Run it from Actions, or locally with `python -m pip install -r requirements.txt` then `python scripts/audit_apps.py`. Exit codes: `0` clean, `1` findings, `2` audit failed.
+From the repository root, run `python -m pip install -r requirements.txt`, then `python scripts/audit_apps.py`. Audit exits: `0` clean, `1` findings, `2` error.
 
-For a persistent status page, create and pin an issue titled **GitHub App Governance — Audit Status**. Set Actions variable `AUDIT_STATUS_ISSUE_NUMBER` to its number; each audit replaces its body with the latest report and run link.
-
-See [GOVERNANCE.md](GOVERNANCE.md) for ownership, review, safe removal, and security limits.
+B2 locking is disabled. CI serializes Terraform jobs; avoid concurrent local applies. Never commit credentials, state, or plans. See [GOVERNANCE.md](GOVERNANCE.md) for reviews, removal, and limits.

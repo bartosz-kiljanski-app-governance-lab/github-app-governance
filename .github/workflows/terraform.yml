@@ -15,6 +15,9 @@ jobs:
   terraform:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: terraform
     concurrency:
       group: terraform-state
       queue: max
@@ -26,6 +29,7 @@ jobs:
     steps:
       - name: Reject fork PRs
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+        working-directory: .
         run: |
           echo "Fork PRs cannot run privileged Terraform plans."
           exit 1
@@ -52,7 +56,7 @@ jobs:
           test -n "$GITHUB_TOKEN"
           test -n "$AWS_ACCESS_KEY_ID"
           test -n "$AWS_SECRET_ACCESS_KEY"
-          terraform init -input=false -lockfile=readonly -backend-config=config/backend.hcl
+          terraform init -input=false -lockfile=readonly -backend-config=../config/backend.hcl
 
       - name: Validate
         run: terraform validate -no-color
@@ -93,7 +97,7 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ github.token }}
           header: terraform-plan
-          path: plan-comment.md
+          path: terraform/plan-comment.md
 
       - name: Apply
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'

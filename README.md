@@ -4,6 +4,12 @@
 
 Terraform protects main with required PRs, its Actions check, and resolved conversations, including for admins. Required approvals are zero for this single-owner demo.
 
+## Verified demonstration
+
+- [Access narrowing PR and plan comment](https://github.com/bartosz-kiljanski-app-governance-lab/github-app-governance/pull/10)
+- [Successful merge/apply](https://github.com/bartosz-kiljanski-app-governance-lab/github-app-governance/actions/runs/38452867268)
+- [Successful audit](https://github.com/bartosz-kiljanski-app-governance-lab/github-app-governance/actions/runs/38455324892)
+
 ## Reviewer setup
 
 Use Terraform 1.16.x and existing selected-access App installations.

@@ -10,8 +10,9 @@ Terraform owns complete repository lists, including access added manually.
 
 1. Confirm consumers and a removal window.
 2. Narrow access by PR; check dependent workloads.
-3. Uninstall in GitHub settings; revoke credentials you control.
-4. Stop applies, back up state, forget that installation's binding, and remove its catalog entry. Review before resuming.
+3. Pause new applies, wait for running applies to finish, and back up state.
+4. Uninstall in GitHub settings; revoke credentials you control.
+5. Forget that installation's binding and remove its catalog entry. Review before resuming.
 
 Deleting an entry alone [leaves one repository accessible](https://github.com/integrations/terraform-provider-github/blob/v6.13.0/github/resource_github_app_installation_repositories.go); it does not uninstall the App.
 
